@@ -11,8 +11,8 @@ In 2019, Google announced Jetbrain's Kotlin as the first-class language for Andr
 
 ## Handling Null Safety
 NPE is one of the most frequently encountered bugs in JVM world. Since Java 8, `Optional` was
-introduced to deal with null reference, but Kotlin has a nicer way to handling nulls. The interface
-below has a method that can return an object or null.
+introduced to deal with null reference, but Kotlin introduces a more concise approach. The interface
+below has a method that can return an optional result.
 
 ```kotlin
 interface UserRepository : AutoCloseable {
@@ -23,8 +23,8 @@ interface UserRepository : AutoCloseable {
 ```
 
 
-Any implementation of the interface must guarantee `userId` is not null and the syntax `User?` means
-the function can return null or non-nullable object. A sample implementation is:
+Any implementation of the interface must guarantee that `userId` is not null. The syntax `User?` means
+that the function can return null or non-nullable object. A sample implementation is:
 
 ```kotlin
 class InMemoryUserRepository : UserRepository {
@@ -233,6 +233,5 @@ scratch with Kotlin (Ktor, RxKotlin, MockK...).
 
 Executable source code at: https://github.com/thanhnamit/rwsd-in-kotlin
 
-I ❤️ Kotlin 😄
 
 
