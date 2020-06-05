@@ -7,7 +7,7 @@ lastmod: 2020-05-31T14:24:10+10:00
 draft: false
 ---
 
-In 2019, Google announced Jetbrain's Kotlin as the first-class language for Android development. Since then, Kotlin has evolved to be more than just a language for Android. On kotlinlang.org, it claims to be safe, concise, expressive and cross-platform. To find out how Kotlin can improve my day-to-day workflow and productivity, I rewrote several Java programs and cherry-pick some useful features that I really appreciate.
+In 2019, Google announced Jetbrain's Kotlin as the first-class language for Android development. Since then, Kotlin has evolved to be more than just a language for Android. On kotlinlang.org, it claims to be safe, concise, expressive and cross-platform. In this blog, I cherry-pick some useful features that I really appreciate when working with Kotlin.
 
 ## Handling Null Safety
 NPE is one of the most frequently encountered bugs in JVM world. Since Java 8, `Optional` was
@@ -227,11 +227,11 @@ class TabpaneView: View() {
 }
 ```
 
-I only touch the surface here, but there are more in Kotlin that worth discovering. Kotlin ecosystem is expanding
+I only scratch the surface here, there are more in Kotlin that worth discovering. Kotlin ecosystem is expanding
 rapidly. Popular frameworks support the language (Spring, Gradle, Spark, Vert.x...) and many have been created from
 scratch with Kotlin (Ktor, RxKotlin, MockK...). 
 
-Executable source code at: https://github.com/thanhnamit/rwsd-in-kotlin
+Executable source code can be found at: https://github.com/thanhnamit/rwsd-in-kotlin
 
 
 
