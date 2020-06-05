@@ -7,7 +7,9 @@ lastmod: 2020-05-31T14:24:10+10:00
 draft: false
 ---
 
-In 2019, Google announced Jetbrain's Kotlin as the first-class language for Android development. Since then, Kotlin has evolved to be more than just a language for Android. On kotlinlang.org, it claims to be safe, concise, expressive and cross-platform. In this blog, I cherry-pick some useful features that I really appreciate when working with Kotlin.
+In 2019, Google announced Jetbrain's Kotlin as the first-class language for Android development. Since then, Kotlin has evolved to be more than just a language for Android. On kotlinlang.org, it claims to be safe, concise, expressive and cross-platform. In this blog, I cherry-pick some useful features (with practical examples) that I really appreciate when working with Kotlin.
+
+{{% toc %}}
 
 ## Handling Null Safety
 NPE is one of the most frequently encountered bugs in JVM world. Since Java 8, `Optional` was
