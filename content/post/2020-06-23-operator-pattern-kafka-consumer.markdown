@@ -4,7 +4,7 @@ title: "Managing a Kafka consumer group with Kubernetes operator"
 tags: [operator, operator-framework, kubernetes, kotlin, golang, kafka, strimzi, prometheus]
 date: 2020-06-19T14:24:10+10:00
 lastmod: 2020-06-19T14:24:10+10:00
-draft: true
+draft: false
 ---
 
 Kubernetes (k8s) introduces a number of [ways to extend](https://kubernetes.io/docs/concepts/extend-kubernetes/) its APIs and structure for customising and managing complex workloads. In this post, I leverage k8s's Operator pattern and Custom Resource Definition (CRD) to manage the life cycle of a Kafka consumer group running atop a k8s cluster.
