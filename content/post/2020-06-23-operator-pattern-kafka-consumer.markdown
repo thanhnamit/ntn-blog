@@ -1,13 +1,23 @@
 ---
 featured: true
 title: "Managing a Kafka consumer group with Kubernetes operator"
-tags: [operator, operator-framework, kubernetes, kotlin, golang, kafka, strimzi, prometheus]
+tags:
+  [
+    operator,
+    operator-framework,
+    kubernetes,
+    kotlin,
+    golang,
+    kafka,
+    strimzi,
+    prometheus,
+  ]
 date: 2020-06-19T14:24:10+10:00
 lastmod: 2020-06-19T14:24:10+10:00
 draft: false
 ---
 
-Kubernetes (k8s) introduces a number of [ways to extend](https://kubernetes.io/docs/concepts/extend-kubernetes/) its APIs and structure for customising and managing complex workloads. In this post, I leverage k8s's Operator pattern and Custom Resource Definition (CRD) to manage the life cycle of a Kafka consumer group running atop a k8s cluster.
+Kubernetes (k8s) has introduced a number of [ways to extend](https://kubernetes.io/docs/concepts/extend-kubernetes/) its APIs and data structure for customising and managing complex workloads. In this post, I attempt to leverage k8s's Operator pattern and Custom Resource Definition (CRD) to manage the life cycle of a Kafka consumer group running atop a k8s cluster.
 
 {{% toc %}}
 
@@ -15,17 +25,17 @@ Source code with instruction for this post: https://github.com/thanhnamit/kconsu
 
 ### Competing consumers pattern in K8S
 
-[Competing consumers pattern](https://www.enterpriseintegrationpatterns.com/patterns/messaging/CompetingConsumers.html) is the basic messaging pattern that allows a group of consumers to read messages from a group of channels (topics or queues) in parallel style. This pattern fits for real-time event, streaming scenarios. For example, consuming IoT events as fast as possible from a message broker then store events in a database, if the order of messages is not important.
+[Competing consumers pattern](https://www.enterpriseintegrationpatterns.com/patterns/messaging/CompetingConsumers.html) is the basic messaging pattern that allows a group of consumers to read messages from a group of channels (topics or queues) in parallel style. This pattern fits for real-time streaming scenarios. For example, consuming IoT events as fast as possible from a message broker then persisting events in a database when the order of messages is not important.
 
-When running Kafka consumers in k8s, each stateless consumer is deployed as a replica (pod) and scaled to consume more messages. Although the consumers are stateless, a Kafka consumer group has its state depending on number of partitions available for a topic. To scale appropriately, an operator needs to understand the Kafka's scaling approach:
+When running Kafka consumers in k8s, each consumer is deployed as a replica (pod) and scaled to consume more messages. Although the consumers are stateless, a Kafka consumer group has its state depending on number of partitions available for a topic. To scale appropriately, an engineer needs to understand the Kafka's scaling approach:
 
 - A Kafka topic contains multiple partitions.
 - Kafka manages the group of consumers cooperatively, it knows how many consumer instances are available and dynamically assigns partitions to consumers. Multiple assigning strategies can be applied (Range, RoundRobin, Custom..), RoundRobin is used to make sure no consumer is idle.
-- Kafka assigns 1 partition to 1 consumer, and 1 consumer can listen to multiple partitions. So a rule of thumb is if we have n topics with m partition each, we can scale to n * m replicas for maximising parallelism.
+- Kafka assigns 1 partition to 1 consumer, and 1 consumer can listen to multiple partitions. So a rule of thumb is if we have n topics with m partition each, we can scale to n \* m replicas for maximising parallelism.
 - Important Kafka consumer metrics are records-lag-max, fetch-rate, records-consumed-rate, bytes-consumed-rate.
-- Kafka consumers work in a group. For any change to the group (adding, removing, restart...), the broker will rebalance partitions, which temporarily stops the consumption activity.
+- Kafka consumers work in a group. For any change to the group such as adding, removing, or restart, the broker rebalances its assigned partitions; the rebalancing temporarily stops the consumption activity.
 
-The [record-lag metric](https://kafka.apache.org/documentation/#consumer_monitoring) and number of partitions per topic are dynamic values that can be changed anytime in production environment. For example, when the cluster includes a new broker, adding new partitions to an existing topic, or producers emit a large volume of messages to the platform. To test how Kafka scaling behaves based on these values, I prototyped [Spring boot Kafka apps](https://github.com/thanhnamit/kconsumer-group-operator/tree/master/apps) with `spring actuator` and `micrometer-registry-prometheus` to expose http endpoints for Prometheus to scrape Kafka metrics.
+The [record-lag metric](https://kafka.apache.org/documentation/#consumer_monitoring) and number of partitions per topic are dynamic values that can be changed anytime in production environment. For example, when a Kafka cluster adds a new broker node, changes number of partitions of an existing topic, or producers emit a large volume of messages to the platform. To test how Kafka scaling behaves based on these values, I prototyped [Spring boot Kafka apps](https://github.com/thanhnamit/kconsumer-group-operator/tree/master/apps) with `spring actuator` and `micrometer-registry-prometheus` to expose http endpoints for Prometheus to scrape Kafka metrics.
 
 For the single-threaded consumer, I added artificial delay of `10 miliseconds` to simulate the actual work has to be done on the received message, so the throughput of this listener is about `100 tps`. The kakfa consumer config also explicitly added to control default settings:
 
@@ -48,29 +58,29 @@ spring:
         partition.assignment.strategy: org.apache.kafka.clients.consumer.RoundRobinAssignor
 ```
 
-On the producer side, I sent messages to a single topic (3 partitions) without delay, the key is empty so Kafka broker applies `DefaultPartitioner` and distributes messages to 3 partitions of the topic. This Grafana graph shows significant lag across all partitions when testing with 10K of messages, 1 consumer. The period of lag per partition is approximately 60 seconds and it took ~ 180 seconds to finish.
+On the producer side, I sent messages to a single topic (3 partitions) without delay, the key is empty so Kafka broker applies `DefaultPartitioner` and distributes messages to 3 partitions of the topic. This Grafana graph below shows significant lag across all partitions when testing with 10K of messages, 1 consumer. The period of lag per partition is approximately 60 seconds and the whole process takes approximately 180 seconds.
 
-![10k-1](/img/posts/2020-06-20-grafana-1.png 'Kafka consumer lag')
+![10k-1](/img/posts/2020-06-20-grafana-1.png "Kafka consumer lag")
 
-Let's scale the consumer to 3 and retest:
+Let's scale the consumer to 3 replicas and retest:
 
-![10k-3](/img/posts/2020-06-20-grafana-2.png 'Kafka consumer lag')
+![10k-3](/img/posts/2020-06-20-grafana-2.png "Kafka consumer lag")
 
 So scaling reduces lag and provides better responsiveness. We still rely on the manual process here. In production / realtime environment, a significant delay (a gap for Ops team member to react to the alert) is not acceptable and violate SLO (service level objective). In the next section and the rest of this post, I will focus on the Operator pattern as an abstraction for centralising operational knowledge. The goals for the operator are:
 
-- Deploy Kafka consumers, service monitor and alert rules.
+- Deploy Kafka consumers and accompanying monitoring, alert rules.
 - Deploy HorizontalPodAutoscaler (HPA) to automatically scale consumers based on Kafka metrics.
-- Detect if the number of partitions changed and update HPA specification.
+- Detect if the number of partitions changed and update HPA's specification.
 
 ### Kubernetes operator overview
 
-Since the introduction of [Operator](https://coreos.com/blog/introducing-operators.html) by Coreos in 2016, the pattern has been applied widely to manage complex cloud-native applications. Community operators are available on [Operator Hub](https://operatorhub.io/) allows SREs to quickly bootstrap application stacks on Kubernetes or Openshift.  From development, Coreos and Red Hat created [Operator SDK](https://sdk.operatorframework.io/) that streamlines operator implementation with Golang, Helm and Ansible. Operators can automate a range of [Day 1 and Day 2](https://codilime.com/day-0-day-1-day-2-the-software-lifecycle-in-the-cloud-age/) tasks on behalf of SREs such as basic install, upgrades or workload scheduling and autoscaling. [Operator maturity model](https://docs.openshift.com/container-platform/4.4/operators/olm-what-operators-are.html) has provided details for those capabilities.
+Since the introduction of [Operator](https://coreos.com/blog/introducing-operators.html) by Coreos in 2016, the pattern has been applied widely to manage complex cloud-native applications. Community operators are available on [Operator Hub](https://operatorhub.io/) allows SREs to speed up installations on Kubernetes or Openshift. Additionally, Coreos and Red Hat have created [Operator SDK](https://sdk.operatorframework.io/) that streamlines operator development with Golang, Helm and Ansible. Operators can automate a range of [Day 1 and Day 2](https://codilime.com/day-0-day-1-day-2-the-software-lifecycle-in-the-cloud-age/) tasks on behalf of SREs such as basic install, upgrades or workload scheduling and autoscaling. [Operator maturity model](https://docs.openshift.com/container-platform/4.4/operators/olm-what-operators-are.html) has provided details for those capabilities.
 
 ### Build a Golang-based operator
 
-> Prerequisite: In this example, I reuse Strimzi operator for Kafka installation, Topic management and Prometheus operator for monitoring (click [here](https://github.com/thanhnamit/kconsumer-group-operator) for more details).
+> Prerequisite: In this demonstration, I reuse Strimzi operator for Kafka installation, Topic management and Prometheus operator for monitoring (click [here](https://github.com/thanhnamit/kconsumer-group-operator) for more details).
 
-Any programming language that can talk to Kubernetes APIs can be used to write operators (i.e Fabric8 for JVM), best available tools are Kubebuilder and Operator SDK by Red Hat. Operator SDK supports Go, Helm or Ansible depending on use cases. Go has huge advantages because it is used to create Kubernetes and its simplicity does make infrastructure/network code more readable, maintainable and performant. Another sweet spot is the ability to directly import resources, types, interfaces from external Go projects or operators as dependencies.
+Any programming language that can talk to Kubernetes APIs can be used to write operators (i.e Fabric8 for JVM), best available tools are Kubebuilder and Operator SDK by Red Hat. Operator SDK supports Go, Helm or Ansible depending on use cases. Go has huge advantages because it is used to create Kubernetes and its simplicity makes infrastructure/network code more readable, maintainable and performant. Another sweet spot is the ability to directly import resources, types, interfaces from external Go projects or operators as dependencies.
 
 The steps to implement an operator can be broken into:
 
@@ -82,7 +92,7 @@ The steps to implement an operator can be broken into:
 6. Build operator image, register CRD to Kubernetes
 7. Deploy and test
 
-###### Primary resource
+#### Primary resource
 
 To design an operator, we start with the data structure of CRD. Following yaml file describe the structure we expect the operator to
 manage:
@@ -102,8 +112,8 @@ spec:
   minReplicas: 1
 status:
   activePods:
-  - kconsumer-6c5f87c746-ltrk5
-  message: 'Message: Reconciliation completed, Error: <nil>'
+    - kconsumer-6c5f87c746-ltrk5
+  message: "Message: Reconciliation completed, Error: <nil>"
   replicas: 1
 ```
 
@@ -113,7 +123,6 @@ image, the topic it should poll messages from, `minReplicas` indicates the minim
 The structure above can be expressed as Golang struct types as below:
 
 ```go
-
 type KconsumerGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -144,7 +153,7 @@ type KconsumerGroupStatus struct {
 }
 ```
 
-###### Child resources
+#### Child resources
 
 A primary resource often has child resources associated with, these resources are native Kubernetes or belong to 3rd party vendor. In
 this example I want to reuse:
@@ -166,7 +175,7 @@ The next step is to create a `controller` to host the core logic of the operator
 - Register watches - operators need to know what resources it monitors
 - Execute reconciliation loops - reconcile the resource states
 
-###### Register watches
+#### Register watches
 
 ```go
 ...
@@ -201,7 +210,7 @@ if err != nil {
 Note we also want to watch for changes from KafkaTopic resource, which is CRD created by Strimzi operator.
 This sharing knowledge enables operators to cooporate on resource changes effectively.
 
-###### Reconcile loop
+#### Reconcile loop
 
 Upon receiving a request (an event triggered by Kubernetes for a change happened a resource). The reconcile loop is the place to implement the changes to the child resources managed by the operator. In this case we want to update HorizontalPodScaler spec when a kafka topic's partition count is updated.
 
@@ -209,7 +218,7 @@ Upon receiving a request (an event triggered by Kubernetes for a change happened
 func (r *ReconcileKconsumerGroup) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
   reqLogger.Info("Reconciling KconsumerGroup")
-  
+
   // Primary resource
 	kgrp := &thenextappsv1alpha1.KconsumerGroup{}
 	err := r.client.Get(context.TODO(), types.NamespacedName{
@@ -222,7 +231,7 @@ func (r *ReconcileKconsumerGroup) Reconcile(request reconcile.Request) (reconcil
 		}
 		return reconcile.Result{}, err
   }
-  
+
   ....
   // Manage Kafka topic changes
 	reconcileResult, err = r.reconcileTopicChange(kgrp, request)
@@ -238,7 +247,7 @@ func (r *ReconcileKconsumerGroup) Reconcile(request reconcile.Request) (reconcil
 ```
 
 The `reconcileTopicChange(kgrp, request)` method will inspect KafkaTopic's change, and then update HPA's maxReplicas
-with number of partitions 
+with number of partitions
 
 ```go
 func (r *ReconcileKconsumerGroup) reconcileTopicChange(kgrp *thenextappsv1alpha1.KconsumerGroup, request reconcile.Request) (*reconcile.Result, error) {
@@ -302,7 +311,7 @@ func (r *ReconcileKconsumerGroup) createHPA(kgrp *thenextappsv1alpha1.KconsumerG
 }
 ```
 
-###### Run unit / e2e tests
+#### Run unit / e2e tests
 
 Run unit test:
 
@@ -316,7 +325,7 @@ E2E test requires the environment is ready. Once installed Kubernetes, Prometheu
 operator-sdk test local ./test/e2e --operator-namespace default
 ```
 
-###### Build images
+#### Build images
 
 To update vendor libraries, build the image and push to container registry
 
@@ -328,7 +337,7 @@ docker push thenextapps/kconsumer-group-operator:v0.0.1
 
 With the image version ready, you need update the operator image name and version at `deploy/operator.yaml`
 
-###### Deploy and test
+#### Deploy and test
 
 First we deploy a Kafka topic with 01 partition and 01 producer
 
@@ -386,7 +395,7 @@ Using kubectl port forwarding, you can verify at `http://localhost:9090/targets`
 kubectl --namespace monitoring port-forward svc/prometheus-k8s 9090
 ```
 
-![scraping](/img/posts/2020-06-20-prom-1.png 'Scraping')
+![scraping](/img/posts/2020-06-20-prom-1.png "Scraping")
 
 Now Kafka metrics are available and ready to be viewed in Prometheus/Grafana, let's do few more tests to see if the operator
 fulfil the design goals. First, we change the KafkaTopic's partition from 1 to 3, we expect the operator to update
@@ -437,7 +446,7 @@ kconsumer   Deployment/kconsumer   0/1k          1         3         3          
 kconsumer   Deployment/kconsumer   0/1k          1         3         1          8m25s
 ```
 
-###### Cleanup
+#### Cleanup
 
 To clean up all resources created by the operator, you just need to remove the primary resource. Kubernetes will automatically
 take care of this activity.
@@ -457,10 +466,11 @@ kubectl delete KconsumerGroup kconsumer
 
 ### Final thoughts
 
-When to use an operator? Not all types of workload require writing operators, for most of the scenarios, Kubernetes's native resources are sufficient enough. Complex and stateful cloud native applications often make good candidates. Writing operator in development phase incurs significant cost and learning curve for engineers. The main benefit of this pattern is that it has potentials to close the gaps that stop business to achieve true resiliency their platform. It is one step toward fully autonomous software in cloud-native environment. The operational knowledge as code can be tracked, versioned and updated just like application code.
+The main benefit of this pattern is that it has potentials to close the gaps that stop business to achieve true resiliency their platform. It is one step toward fully autonomous software in cloud-native environment. The operational knowledge as code can be tracked, versioned and updated just like application code.
 
-Who should write operators? It is tempting to say this should be done by operating team alone. In fact, operating software is rather complicated, the knowledge acquired to operate software can span across multiple disciplines such as designing, architecting, coding and testing. It should be well-thought-out during the design phase and it is the joined effort among teams. Intuitively, operators can be implemented by developers or SRE team, the engineer should collaborate with architects to understand the quality attributes (non-functional goals) of the platform, also work
-with SREs to assess infrastructure impact.
+When to use an operator? Not all types of workload require writing operators. For most of the scenarios, Kubernetes's native resources are sufficient. The complexity level of the application, development cost and team capability are sensible factors to justify the decision.
+
+Who should write operators? It is tempting to say this should be done by operating team alone. In fact, operating software is rather complicated, the knowledge acquired to operate software can span across multiple disciplines such as designing, architecting, coding and testing. It should be well-thought-out during the design phase and it is the joined effort among teams. Intuitively, operators can be implemented by developers or SRE team, the engineer should collaborate with architects to understand the quality attributes (non-functional goals) of the platform, also work with SREs to assess infrastructure impact.
 
 Thanks for reading, I would love to hear your feedback and experience with Kubernetes and operator.
 
@@ -481,4 +491,3 @@ References:
 - [K8S](https://godoc.org/k8s.io/apimachinery): great document for k8s programmer
 - [kubebuilder](https://book.kubebuilder.io/): everything about k8s programming
 - [horizontal pod autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/)
-
