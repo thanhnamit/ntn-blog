@@ -17,6 +17,8 @@ lastmod: 2020-06-19T14:24:10+10:00
 draft: false
 ---
 
+![Erskine Falls - Lorne - VIC](/img/posts/2020-06-20-stream.jpg 'Erskine Falls - Lorne - VIC')
+
 Kubernetes (k8s) has introduced a number of [ways to extend](https://kubernetes.io/docs/concepts/extend-kubernetes/) its APIs and data structure for customising and managing complex workloads. In this post, I attempt to leverage k8s's Operator pattern and Custom Resource Definition (CRD) to manage the life cycle of a Kafka consumer group running atop a k8s cluster.
 
 {{% toc %}}
