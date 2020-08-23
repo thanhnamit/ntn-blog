@@ -1,6 +1,6 @@
 ---
 featured: true
-title: "Managing a Kafka consumer group with Kubernetes operator"
+title: "Scaling a Kafka consumer group with Kubernetes operator and HPA"
 tags:
   [
     operator,
