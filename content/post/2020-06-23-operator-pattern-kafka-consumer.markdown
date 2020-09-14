@@ -12,8 +12,8 @@ tags:
     strimzi,
     prometheus,
   ]
-date: 2020-07-19T14:24:10+10:00
-lastmod: 2020-07-19T14:24:10+10:00
+date: 2020-08-25T14:24:10+10:00
+lastmod: 2020-08-25T14:24:10+10:00
 draft: false
 ---
 
