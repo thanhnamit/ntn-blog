@@ -24,11 +24,11 @@ draft: false
 
 Morden software systems nowadays are no longer running in a single server, but across multiple machines, databases, SaaS and cloud vendors. They are implemented in different programming languages and leverage a variety of communication protocols. As a result, measuring distributed systems' accuracy, latency, correctness and consistency is a thorny problem. Evolutions in architecture landscape especially with microservices, serverless, event-based even make the operation of the systems more challenging.
 
-**Observability** (a new buzzword) is a quality of a software system that is implemented to generate enough data points to reason about the system during its operation. Fast feedback from production is crucial for an engineering team to improve and automate highly performant and reliable systems at scale. Three pillars of Observability covered in this series of blogs are **Distributed Tracing, Logging and Metrics**.
+**Observability** (a term from control theory - new buzzword in software world) is a quality of a software system that is implemented to generate enough data points to reason about the system during its operation. High quality, fast feedback from production (without introducing additional code) is crucial for an engineering team to improve and automate highly performant and reliable systems at scale. Three pillars of Observability covered in this series of blogs are **Distributed Tracing, Logging and Metrics**.
 
-Previously, many existing OSS libraries and SaaS vendors are already presenting capabilities to export logs, metrics and traces out of software systems. Around May 2019, **OpenTelemetry (OTel)** was [announced](https://www.cncf.io/blog/2019/05/21/a-brief-history-of-opentelemetry-so-far/) as a CNCF sandbox project with a focus to standardise telemetry data model, architecture and implementation of how an observable software should be built. At the time of writing, implementations of OTel are in beta stage and GA release may be out soon in 2021 for major languages.
+OSS libraries and SaaS vendors have already been presenting capabilities to export logs, metrics and traces out of software systems. In May 2019, **[OpenTelemetry (OTel)](https://opentelemetry.io/)** was [announced](https://www.cncf.io/blog/2019/05/21/a-brief-history-of-opentelemetry-so-far/) as a CNCF sandbox project with a focus to standardise telemetry data model, architecture and implementation of how an observable software should be built. At the time of writing, OTel SDKs are in beta stage and GA releases may be out soon in 2021 for major languages.
 
-Since a few examples I found do not give me a comprehensive view of OTel as they're not solution-focused, I keen to assemble an example in Golang to play with some key features of OpenTelemetry. This custom solution is not an example of a production-ready one so please bear that in mind.
+To gain a comprehensive view of OTel, I has assembled [a project in Golang](https://github.com/thanhnamit/shortenit) to play with its key features. This custom solution is not an example of a production-ready one so please bear that in mind.
 
 This blog post is the first part in a series about OpenTelemetry I plan to blog about:
 
@@ -74,19 +74,19 @@ This single end-to-end view of a request is extremely valuable for engineers to 
 
 ![Span Details](/img/posts/2021-01-15-spandetails.png 'Span Details')
 
-This span is instrumented by otelgrpc auto-instrumentation library, which is prebuilt for a specific protocol (grpc in this case). It collects information about rpc status code, service name & method, and host information. Span can be customised in application code to capture operation details if more visibility of the trace is required.
+This span is instrumented by `otelgrpc` auto-instrumentation library for gRPC. It collects information about gRPC status code, service name & method, and host information. Span can be customised in application code to capture operation details if more visibility of the trace is required.
 
 Let's look at Distributed tracing from the implementation perspective. The language I used here is Golang but a similar approach should be available for other languages as they all conform to the same OTel specification.
 
 #### Configuring Exporter, Tracer, Sampler and Propagator
 
-The first step is to config necessary component for tracing. OTel Tracing API standardises the following concepts:
+The first step is to config necessary components for tracing. OTel Tracing API standardises the following concepts:
 
-- **Exporter**: a protocol-specific, pluggable component that implements OTel's SpanExporter interface to send telemetry data to backend (i.e Jaeger in this example)
-- **TraceProvider**: responsible for creating a Tracer
-- **Tracer**: is responsible for making `Span`
-- **Sampler**: controls when a span is recorded
-- **Propagator**: responsible to read and write context data across process boundaries
+- **Exporter**: a protocol-specific, pluggable component that implements OTel's SpanExporter interface to send telemetry data to collectors (i.e Jaeger)
+- **TraceProvider**: creating a Tracer
+- **Tracer**: making and linking `Span` together
+- **Sampler**: controlling when a span is recorded
+- **Propagator**: reading and writing context data across process boundaries
 
 The following code configs a full pipeline backed by Jaeger's collector endpoint normally available at <http://127.0.0.1:14268/api/traces>. TraceProvider, TextMapPropagator and AlwaysSample sampler are configured and registered as global variables.
 
@@ -133,7 +133,7 @@ In-process context passing is not new as it has been implemented in many framewo
 
 #### Tracing remote calls and propagating inter-process context
 
-In a lot of situations, our service will need to call an upstream service, hence this is an ideal point for instrumentation. In Shortenit case, `api-shortenit-v1` calls `grpc-alias-provider-v1` using Grpc protocol. As you might guess, there will be two spans created, one on the caller side and one on the receiver side.
+In a lot of situations, our service will need to call an upstream service, hence this is an ideal point for instrumentation. In Shortenit case, `api-shortenit-v1` calls `grpc-alias-provider-v1` using gRPC protocol. As you might guess, there will be two spans created, one on the caller's side and one on the receiver's side.
 
 ![Cross boundaries](/img/posts/2021-01-15-crossprocess.png 'Cross boundaries')
 
@@ -143,7 +143,7 @@ As above, all we need is to add dependencies and configure on client and server
 go get -u go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc@v0.15.0
 ```
 
-Grpc client needs to be configured with an Interceptor
+gRPC client needs to be configured with an Interceptor
 
 ```go
 func NewAliasClient(cfg *config.Config) *AliasClient {
@@ -160,11 +160,11 @@ s := grpc.NewServer(
 )
 ```
 
-It sounds like magic but if we look at the Interceptor code all it does is interacting with OTel SDK's propagators to inject and extract data from an outgoing and an incoming request. Currently, OTel SDKs bundled with W3C Trace Context implementation as default.
+It sounds like magic but if we look at the Interceptor code all it does is interacting with OTel SDK's propagators to inject metadata to an outgoing request and extract that from an incoming request. Currently, OTel SDKs bundled with [W3C Trace Context](https://www.w3.org/TR/trace-context/) implementation as default.
 
 #### Instrumenting HTTP listener
 
-Instrumenting at listener level provides valuable information about how a client interacts with a REST service; we can record http related attributes in Span tags (method, path, user_agent, status code...).
+Instrumenting at listener level provides valuable information about how a client interacts with a REST service; we can record HTTP related attributes in Span tags (method, path, user_agent, status code...).
 
 ![Http Listener](/img/posts/2021-01-15-httplistener.png 'Http Listener')
 
@@ -182,7 +182,7 @@ func NewGlobalHandler(handler http.Handler, operation string) func(w http.Respon
 
 #### Instrumenting database and backends
 
-As a lot of performance issues are database-related, instrumenting database interaction hence is a crucial part to analyse and troubleshoot the issues. Commercial and OSS database vendors start adopting OTel instrumentation by providing their version of library. The span below, created by `otelmongo`, expose details about the query execution and database instance that our API interacts with.
+As a lot of performance issues are database-related, instrumenting database interaction hence is a crucial part to analyse and troubleshoot the issues. Commercial and OSS database vendors start adopting OTel instrumentation by providing their version of library. The span below, created by `otelmongo`, exposes details about the query execution and database instance that our API interacts with.
 
 ![Mongo](/img/posts/2021-01-15-mongo.png 'Mongo')
 
@@ -201,7 +201,7 @@ db, err := mongo.NewClient(opts)
 
 #### Instrumentation for messaging
 
-Instrumenting for messaging or asynchronous calls is not always easy as it involves a message queue in between and context has to be passed together with messages ( requires a change in message structures). Shopify's engineering team has contributed `otelsarama` library to support Kafka client/server instrumentation.
+Instrumenting for messaging or asynchronous calls is not always easy as it involves a message queue / topic in between and context has to be passed together with messages (requires a change in message structures). Shopify's engineering team has contributed `otelsarama` library to support Kafka client/server instrumentation.
 
 ![Kafka](/img/posts/2021-01-15-kafka.png 'Kafka')
 
@@ -230,8 +230,7 @@ ep.producer.Input() <- &msg
 
 #### Web and mobile instrumentation
 
-Most of frontend today interact with REST api via HTTP, so this scenario is identical to remote call instrumentation. However, since frontend sits independently from backend, a trust layer need to be established to make sure tracing data is
-valid and correctly adjusted before assembling traces.
+Most of frontend today interact with REST api via HTTP, so this scenario is identical to the remote call instrumentation. However, since frontend sits independently from backend, a trust layer need to be established to make sure tracing data is valid and correctly adjusted before assembling traces.
 
 ### Summary
 
