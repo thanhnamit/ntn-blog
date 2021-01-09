@@ -10,7 +10,7 @@ authors:
 superuser: true
 
 # Role/position
-role: An accountable and pragmatic software engineer
+role: Software engineer
 
 # Organizations/Affiliations
 organizations:
