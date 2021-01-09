@@ -22,7 +22,7 @@ draft: false
   <figcaption>By Lev Polyakov (www.polyakovproductions.com)</figcaption>
 </figure>
 
-When I had to investigate a production issue in the past, one of first steps was correlating log entries from multiple servers to find out full journey of a request. It was a real pain in the neck. In many instances, I had to add additional an log entry, redeploy app and check again on the next day. The full process is painful and unproductive.
+When I had to investigate a production issue in the past, one of first steps was correlating log entries from multiple servers to find out full journey of a request. It was a real pain in the neck. In many instances, I had to add an additional log entry, redeploy app and check again on the next day. The full process is painful and unproductive.
 
 To make the matter worse, most of modern software systems are no longer running in a single server, but across multiple machines, databases, SaaS, and cloud vendors. They are implemented in different programming languages, leveraging a variety of architecture patterns and communication protocols. As a result, measuring accuracy, latency, correctness and consistency of distributed systems is an intractable problem.
 
