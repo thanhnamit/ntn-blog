@@ -164,7 +164,7 @@ It sounds like magic but if we look at the Interceptor code all it does is inter
 
 #### Instrumenting HTTP listener
 
-Instrumenting at listener level provides valuable information about how a client interacts with a REST service; we can record HTTP related attributes in Span tags (method, path, user_agent, status code...).
+Instrumenting at listener level provides valuable information about how a client interacts with a REST service. We can record HTTP related attributes in Span tags (method, path, user_agent, status code...).
 
 ![Http Listener](/img/posts/2021-01-15-httplistener.png 'Http Listener')
 
@@ -182,7 +182,7 @@ func NewGlobalHandler(handler http.Handler, operation string) func(w http.Respon
 
 #### Instrumenting database and backends
 
-As a lot of performance issues are database-related, instrumenting database interaction hence is a crucial part to analyse and troubleshoot the issues. Commercial and OSS database vendors start adopting OTel instrumentation by providing their version of library. The span below, created by `otelmongo`, exposes details about the query execution and database instance that our API interacts with.
+As a lot of performance issues are database-related, instrumenting database interaction is a crucial part to analyse and troubleshoot the issues. Commercial and OSS database vendors start adopting OTel instrumentation by providing their version of library. The span below, created by `otelmongo`, exposes details about the query execution and database instance that our API interacts with.
 
 ![Mongo](/img/posts/2021-01-15-mongo.png 'Mongo')
 
