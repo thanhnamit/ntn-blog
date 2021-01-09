@@ -22,13 +22,13 @@ draft: false
   <figcaption>By Lev Polyakov (www.polyakovproductions.com)</figcaption>
 </figure>
 
-When I had to investigate a production issue in the past, one of first steps was correlating log entries from multiple servers to find out full journey of a request. It was a real pain in the neck. In many instances, I had to add additional log entry, redeploy app and check again next day, the full process is painful and unproductive.
+When I had to investigate a production issue in the past, one of first steps was correlating log entries from multiple servers to find out full journey of a request. It was a real pain in the neck. In many instances, I had to add additional an log entry, redeploy app and check again on the next day. The full process is painful and unproductive.
 
-Fast forward to today, most of modern software systems are no longer running in a single server, but across multiple machines, databases, SaaS, and cloud vendors. They are implemented in different programming languages, leveraging a variety of architecture patterns and communication protocols. As a result, measuring accuracy, latency, correctness and consistency of distributed systems is an intractable problem.
+To make the matter worse, most of modern software systems are no longer running in a single server, but across multiple machines, databases, SaaS, and cloud vendors. They are implemented in different programming languages, leveraging a variety of architecture patterns and communication protocols. As a result, measuring accuracy, latency, correctness and consistency of distributed systems is an intractable problem.
 
 **Observability** (a term from control theory) is a quality of a software system that is implemented to generate enough data points to reason about the system during its operation. Fast high-quality feedback from production (without introducing additional code) is crucial for engineers to improve and automate highly performant and reliable systems at scale. For years, OSS libraries and SaaS vendors have already been presenting observability capabilities to export **logs, metrics and traces** out of software systems. In May 2019, **[OpenTelemetry (OTel)](https://opentelemetry.io/)** was [announced](https://www.cncf.io/blog/2019/05/21/a-brief-history-of-opentelemetry-so-far/) as a CNCF sandbox project with a focus to standardise telemetry data model, architecture and implementation for observable softwares. At the time of writing, OTel SDKs are in beta stage and GA releases may be out soon in 2021 for major languages.
 
-To gain a comprehensive view of OTel, I has assembled [a project in Golang](https://github.com/thanhnamit/shortenit) to play with its key features, this custom solution is not an example of a production-ready one so please bear that in mind.
+To gain a comprehensive view of OTel, I has assembled [a project (called ShortenIt) in Golang](https://github.com/thanhnamit/shortenit) to play with its key features. This custom solution is not an example of a production-ready one so please bear that in mind.
 
 This is the first part in a series about OpenTelemetry:
 
@@ -230,7 +230,7 @@ ep.producer.Input() <- &msg
 
 #### Web and mobile instrumentation
 
-Most of frontend today interact with REST api via HTTP, so this scenario is identical to the remote call instrumentation. However, since frontend sits independently from backend, a trust layer need to be established to make sure tracing data is valid and correctly adjusted before assembling traces.
+Most of frontend apps today interact with REST api via HTTP, so this scenario is identical to the remote call instrumentation. However, since frontend apps are deployed closer to end users, a trust layer need to be established to make sure tracing data is valid and correctly adjusted before assembling traces.
 
 ### Summary
 
