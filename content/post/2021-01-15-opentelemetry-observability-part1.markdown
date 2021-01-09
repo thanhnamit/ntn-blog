@@ -40,7 +40,7 @@ This is the first part in a series about OpenTelemetry:
 
 ### Explore OTel examples with ShortenIt
 
-ShortenIt solution provides similar functionalities as **tinyurl.com** website. Basically, we can generate a short URL from a very long one, short URLs save space for sharing, displaying or printing. In the following design, two main services `api-shortenit-v1` and `grpc-alias-provider-v1` are implemented with OTel to send its telemetry data (metrics, traces) to backend collectors (Prometheus and Jaeger).
+ShortenIt solution provides similar functionalities as **tinyurl.com** website. Basically, we can generate a short URL from a very long one. Short URLs save space for sharing, displaying or printing. In the following design, two main services `api-shortenit-v1` and `grpc-alias-provider-v1` are implemented with OTel to send its telemetry data (metrics, traces) to backend collectors (Prometheus and Jaeger).
 
 ![Shortenit Design](/img/posts/2021-01-15-shortenit.png 'Shortenit')
 
