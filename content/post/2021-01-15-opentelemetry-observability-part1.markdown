@@ -59,7 +59,7 @@ If you are keen on running the example locally, please follow instructions outli
 
 ### Distributed tracing in action
 
-Now let's have a look at an end-to-end trace of the request `POST /shortenit`. Client app can extract initial `TraceId` and `SpanId` in response header `Traceparent`, for example `8d63ac3f01d517d71c5a803f3e37e981` is my unique TraceId. To view its trace timeline, enter the Id in Jeager at `http://localhost:16686/search`.
+Now let's have a look at an end-to-end trace of the request `POST /shortenit`. Client app can extract initial `TraceId` and `SpanId` in response header `Traceparent`. For example, `8d63ac3f01d517d71c5a803f3e37e981` is my unique TraceId. To view its trace timeline, enter the Id in Jeager at `http://localhost:16686/search`.
 
 ![Trace Timeline](/img/posts/2021-01-15-tracetimeline.png 'Trace Timeline')
 
