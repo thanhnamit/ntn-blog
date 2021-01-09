@@ -230,7 +230,7 @@ ep.producer.Input() <- &msg
 
 #### Web and mobile instrumentation
 
-Most of frontend apps today interact with REST api via HTTP, so this scenario is identical to the remote call instrumentation. However, since frontend apps are deployed closer to end users, a trust layer need to be established to make sure tracing data is valid and correctly adjusted before assembling traces.
+Most of frontend apps today interact with REST api via HTTP, so this scenario is identical to the remote call instrumentation. However, since frontend apps are deployed closer to end users, a trust layer needs to be established to make sure that tracing data is valid and correctly adjusted before assembling traces.
 
 ### Summary
 
