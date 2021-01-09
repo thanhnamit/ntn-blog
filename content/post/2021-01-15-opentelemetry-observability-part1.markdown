@@ -48,7 +48,7 @@ Two use cases we want to add distributed trace are:
 
 ##### Creating a short URL via POST /shortenit
 
-A client sends a long URL to `api-shortenit-v1`, this service calls `grpc-alias-provider-v1` to get a short key and the URL mapping is persisted in MongoDB. If the request contains an authenticated user then we need to save the mapping to the user's URL list as well. We need obtain the request trace from the client to `api-shortenit-v1`, `grpc-alias-provider-v1`, MongoDB and Redis cache (alias store)
+A client sends a long URL to `api-shortenit-v1`. This service calls `grpc-alias-provider-v1` to get a short key and the URL mapping is persisted in MongoDB. If the request contains an authenticated user, we need to save the mapping to the user's URL list as well. We need to obtain the request trace from the client to `api-shortenit-v1`, `grpc-alias-provider-v1`, MongoDB, and Redis cache (alias store).
 
 ##### Get the original URL for an alias via GET /shortenit/{alias}
 
