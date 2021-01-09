@@ -22,15 +22,15 @@ draft: false
   <figcaption>By Lev Polyakov (www.polyakovproductions.com)</figcaption>
 </figure>
 
-Morden software systems nowadays are no longer running in a single server, but across multiple machines, databases, SaaS and cloud vendors. They are implemented in different programming languages and leverage a variety of communication protocols. As a result, measuring distributed systems' accuracy, latency, correctness and consistency is a thorny problem. Evolutions in architecture landscape especially with microservices, serverless, event-based even make the operation of the systems more challenging.
+Most of modern software systems are no longer running in a single server, but across multiple machines, databases, SaaS, and cloud vendors. They are implemented in different programming languages, leveraging a variety of architecture patterns and communication protocols. As a result, measuring accuracy, latency, correctness and consistency of distributed systems is an intractable problem.
 
-**Observability** (a term from control theory - new buzzword in software world) is a quality of a software system that is implemented to generate enough data points to reason about the system during its operation. High quality, fast feedback from production (without introducing additional code) is crucial for an engineering team to improve and automate highly performant and reliable systems at scale. Three pillars of Observability covered in this series of blogs are **Distributed Tracing, Logging and Metrics**.
+**Observability** (a term from control theory) is a quality of a software system that is implemented to generate enough data points to reason about the system during its operation. Fast high-quality feedback from production (without introducing additional code) is crucial for engineers to improve and automate highly performant and reliable systems at scale. Three pillars of Observability covered in this series of blogs are **Distributed Tracing, Logging and Metrics**.
 
-OSS libraries and SaaS vendors have already been presenting capabilities to export logs, metrics and traces out of software systems. In May 2019, **[OpenTelemetry (OTel)](https://opentelemetry.io/)** was [announced](https://www.cncf.io/blog/2019/05/21/a-brief-history-of-opentelemetry-so-far/) as a CNCF sandbox project with a focus to standardise telemetry data model, architecture and implementation of how an observable software should be built. At the time of writing, OTel SDKs are in beta stage and GA releases may be out soon in 2021 for major languages.
+OSS libraries and SaaS vendors have already been presenting capabilities to export logs, metrics and traces out of software systems. In May 2019, **[OpenTelemetry (OTel)](https://opentelemetry.io/)** was [announced](https://www.cncf.io/blog/2019/05/21/a-brief-history-of-opentelemetry-so-far/) as a CNCF sandbox project with a focus to standardise telemetry data model, architecture and implementation for observable softwares. At the time of writing, OTel SDKs are in beta stage and GA releases may be out soon in 2021 for major languages.
 
-To gain a comprehensive view of OTel, I has assembled [a project in Golang](https://github.com/thanhnamit/shortenit) to play with its key features. This custom solution is not an example of a production-ready one so please bear that in mind.
+To gain a comprehensive view of OTel, I has assembled [a project in Golang](https://github.com/thanhnamit/shortenit) to play with its key features, this custom solution is not an example of a production-ready one so please bear that in mind.
 
-This blog post is the first part in a series about OpenTelemetry I plan to blog about:
+This is the first part in a series about OpenTelemetry:
 
 - Part 1 - Distributed Tracing (this post)
 - Part 2 - Logs and Metrics
