@@ -53,7 +53,7 @@ A client sends a long URL to `api-shortenit-v1`. This service calls `grpc-alias-
 ##### Get the original URL for an alias via GET /shortenit/{alias}
 
 When the client wants to get back the original URL, `api-shortenit-v1` will check
-the mapping in MongoDB, if found the long URL is returned for the provided key. For the analytical purpose, the API also publishes success responses to a Kafka topic.
+the mapping in MongoDB. If found, the long URL is returned for the provided key. For the analytical purpose, the API also publishes success responses to a Kafka topic.
 
 If you keen to run and play with the example locally, please follow instructions outline <https://github.com/thanhnamit/shortenit>
 
