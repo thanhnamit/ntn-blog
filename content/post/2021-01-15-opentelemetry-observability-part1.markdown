@@ -108,7 +108,7 @@ With that configuration, let's look at several instrumentation use cases:
 #### Custom span and in-process context passing
 
 Tracing an individual function with blocks of logic could give us a meaningful measurement of how the main logic performs. An application should be able
-to propagate in-process context in its call stack so an existing span can be extracted for linking and a new span to be inserted. Depend on the language we choose, Context is available explicitly (i.e Golang) or implicitly via Thread-local vars (i.e Java). In this instance, I created a custom span called `service.GetNewAlias` that comprises multiple child spans when the main service function calls other functions to fulfil its logic.
+to propagate in-process context in its call stack so that an existing span can be extracted for linking and a new span can be inserted. Depending on the language we choose, the Context is available explicitly (i.e Golang) or implicitly via Thread-local vars (i.e Java). In this instance, I created a custom span called `service.GetNewAlias` that comprises multiple child spans when the main service function calls other functions to fulfil its logic.
 
 ![Custom Span](/img/posts/2021-01-15-customspan.png 'Custom Span')
 
