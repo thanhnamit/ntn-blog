@@ -22,11 +22,11 @@ draft: false
   <figcaption>By Lev Polyakov (www.polyakovproductions.com)</figcaption>
 </figure>
 
-Most of modern software systems are no longer running in a single server, but across multiple machines, databases, SaaS, and cloud vendors. They are implemented in different programming languages, leveraging a variety of architecture patterns and communication protocols. As a result, measuring accuracy, latency, correctness and consistency of distributed systems is an intractable problem.
+When I had to investigate a production issue in the past, one of first steps was correlating log entries from multiple servers to find out full journey of a request. It was a real pain in the neck. In many instances, I had to add additional log entry, redeploy app and check again next day, the full process is painful and unproductive.
 
-**Observability** (a term from control theory) is a quality of a software system that is implemented to generate enough data points to reason about the system during its operation. Fast high-quality feedback from production (without introducing additional code) is crucial for engineers to improve and automate highly performant and reliable systems at scale. Three pillars of Observability covered in this series of blogs are **Distributed Tracing, Logging and Metrics**.
+Fast forward to today, most of modern software systems are no longer running in a single server, but across multiple machines, databases, SaaS, and cloud vendors. They are implemented in different programming languages, leveraging a variety of architecture patterns and communication protocols. As a result, measuring accuracy, latency, correctness and consistency of distributed systems is an intractable problem.
 
-OSS libraries and SaaS vendors have already been presenting capabilities to export logs, metrics and traces out of software systems. In May 2019, **[OpenTelemetry (OTel)](https://opentelemetry.io/)** was [announced](https://www.cncf.io/blog/2019/05/21/a-brief-history-of-opentelemetry-so-far/) as a CNCF sandbox project with a focus to standardise telemetry data model, architecture and implementation for observable softwares. At the time of writing, OTel SDKs are in beta stage and GA releases may be out soon in 2021 for major languages.
+**Observability** (a term from control theory) is a quality of a software system that is implemented to generate enough data points to reason about the system during its operation. Fast high-quality feedback from production (without introducing additional code) is crucial for engineers to improve and automate highly performant and reliable systems at scale. For years, OSS libraries and SaaS vendors have already been presenting observability capabilities to export **logs, metrics and traces** out of software systems. In May 2019, **[OpenTelemetry (OTel)](https://opentelemetry.io/)** was [announced](https://www.cncf.io/blog/2019/05/21/a-brief-history-of-opentelemetry-so-far/) as a CNCF sandbox project with a focus to standardise telemetry data model, architecture and implementation for observable softwares. At the time of writing, OTel SDKs are in beta stage and GA releases may be out soon in 2021 for major languages.
 
 To gain a comprehensive view of OTel, I has assembled [a project in Golang](https://github.com/thanhnamit/shortenit) to play with its key features, this custom solution is not an example of a production-ready one so please bear that in mind.
 
@@ -38,7 +38,7 @@ This is the first part in a series about OpenTelemetry:
 
 {{% toc %}}
 
-### Explore OTel with ShortenIt
+### Explore OTel examples with ShortenIt
 
 ShortenIt solution provides similar functionalities as **tinyurl.com** website. Basically, we can generate a short URL from a very long one, short URLs save space for sharing, displaying or printing. In the following design, two main services `api-shortenit-v1` and `grpc-alias-provider-v1` are implemented with OTel to send its telemetry data (metrics, traces) to backend collectors (Prometheus and Jaeger).
 
