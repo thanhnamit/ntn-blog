@@ -88,7 +88,7 @@ The first step is to config necessary components for tracing. OTel Tracing API s
 - **Sampler**: controlling when a span is recorded
 - **Propagator**: reading and writing context data across process boundaries
 
-The following code configs a full pipeline backed by Jaeger's collector endpoint normally available at <http://127.0.0.1:14268/api/traces>. TraceProvider, TextMapPropagator and AlwaysSample sampler are configured and registered as global variables.
+The following code configs a full pipeline backed by Jaeger's collector endpoint normally available at <http://127.0.0.1:14268/api/traces>. TraceProvider, TextMapPropagator and AlwaysSample are configured and registered as global variables.
 
 ```go
 func InitTracer(serviceName string, traceCollector string) func() {
@@ -152,7 +152,7 @@ func NewAliasClient(cfg *config.Config) *AliasClient {
 }
 ```
 
-An inceptor on server side
+An inceptor on the server-side
 
 ```go
 s := grpc.NewServer(
@@ -164,11 +164,11 @@ It sounds like magic but if we look at the Interceptor code all it does is inter
 
 #### Instrumenting HTTP listener
 
-Instrumenting at listener level provides valuable information about how a client interacts with a REST service. We can record HTTP related attributes in Span tags (method, path, user_agent, status code...).
+Instrumenting at the listener level provides valuable information about how a client interacts with a REST service. We can record HTTP related attributes in Span tags (method, path, user_agent, status code...).
 
 ![Http Listener](/img/posts/2021-01-15-httplistener.png 'Http Listener')
 
-The instrumentation library is `otelhttp`, not part of OTel spec but provided by community or vendor. We need to add this dependency and register it as middleware in http pipeline.
+The instrumentation library is `otelhttp`, not part of OTel spec but provided by community or vendor. We need to add this dependency and register it as middleware in HTTP pipeline.
 
 ```go
 go get -u go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp@v0.15.0
@@ -182,7 +182,7 @@ func NewGlobalHandler(handler http.Handler, operation string) func(w http.Respon
 
 #### Instrumenting database and backends
 
-As a lot of performance issues are database-related, instrumenting database interaction is a crucial part to analyse and troubleshoot the issues. Commercial and OSS database vendors start adopting OTel instrumentation by providing their version of library. The span below, created by `otelmongo`, exposes details about the query execution and database instance that our API interacts with.
+As a lot of performance issues are database-related, instrumenting database interaction is a crucial part to analyse and troubleshoot the issues. Commercial and OSS database vendors start adopting OTel instrumentation by providing their version of the library. The span below, created by `otelmongo`, exposes details about the query execution and database instance that our API interacts with.
 
 ![Mongo](/img/posts/2021-01-15-mongo.png 'Mongo')
 
@@ -190,7 +190,7 @@ As a lot of performance issues are database-related, instrumenting database inte
 go get -u go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo
 ```
 
-Setting up new mongo connection with additional monitor
+Setting up new mongo connection with an additional monitor
 
 ```go
 opts := options.Client()
@@ -201,7 +201,7 @@ db, err := mongo.NewClient(opts)
 
 #### Instrumentation for messaging
 
-Instrumenting for messaging or asynchronous calls is not always easy as it involves a message queue / topic in between and context has to be passed together with messages (requires a change in message structures). Shopify's engineering team has contributed `otelsarama` library to support Kafka client/server instrumentation.
+Instrumenting for messaging or asynchronous calls is not always easy as it involves a message queue/topic in between and context has to be passed together with messages (requires a change in message structures). Shopify's engineering team has contributed `otelsarama` library to support Kafka client/server instrumentation.
 
 ![Kafka](/img/posts/2021-01-15-kafka.png 'Kafka')
 
@@ -230,7 +230,7 @@ ep.producer.Input() <- &msg
 
 #### Web and mobile instrumentation
 
-Most of frontend apps today interact with REST api via HTTP, so this scenario is identical to the remote call instrumentation. However, since frontend apps are deployed closer to end users, a trust layer needs to be established to make sure that tracing data is valid and correctly adjusted before assembling traces.
+Most of the frontend apps today interact with REST api via HTTP, so this scenario is identical to the remote call instrumentation. However, since frontend apps are deployed closer to end-user, a trust layer needs to be established to make sure that tracing data is valid and correctly adjusted before assembling traces.
 
 ### Summary
 
