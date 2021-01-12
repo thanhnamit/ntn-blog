@@ -234,7 +234,7 @@ Most of the frontend apps today interact with REST api via HTTP, so this scenari
 
 ### Summary
 
-This is the first pillar of Observability, its main goal is to enable engineers to understand and debug programmatic failures in a distributed environment. In the next post, we will look at how OTel handles logs and metrics. Stay tuned!
+Distributed tracing is the first pillar of Observability, its main goal is to enable engineers to understand and debug programmatic failures in a distributed environment. In the next post, we will look at how OTel handles logs and metrics. Stay tuned!
 
 ### References
 
