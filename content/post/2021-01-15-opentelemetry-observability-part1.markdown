@@ -180,7 +180,7 @@ func NewGlobalHandler(handler http.Handler, operation string) func(w http.Respon
 }
 ```
 
-#### Instrumenting database and backends
+#### Instrumenting storage clients
 
 As a lot of performance issues are database-related, instrumenting database interaction is a crucial part to analyse and troubleshoot the issues. Commercial and OSS database vendors start adopting OTel instrumentation by providing their version of the library. The span below, created by `otelmongo`, exposes details about the query execution and database instance that our API interacts with.
 
