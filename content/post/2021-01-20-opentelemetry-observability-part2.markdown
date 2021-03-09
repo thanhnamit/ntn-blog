@@ -95,13 +95,12 @@ For each measurement, the meter provides a corresponding instrument. Let's loop 
 
 ### Counter
 
-The Counter can be used when it is meaningful to record the sum of a metric at a point in time. This instrument has the following characteristics:
+To be used when it is meaningful to record the sum of a metric at a point in time. In case of counting total bytes processed by an endpoint, this instrument has the following characteristics:
 
 - Synchronous: the size of a request is captured immediately during execution.
 - Adding (measurement): only a single value (total of bytes) makes sense.
 - Monotonic: the total of bytes is only increasing.
 
-For example, this function counts sum of all request size of a particular endpoint.
 ```go
 func recordRequestSize(meter metric.Meter, r *http.Request, req core.ShortenURLRequest, label *label.KeyValue) {
 	counter := metric.Must(meter).NewInt64Counter("api-shortenit-v1.create-alias.request-size.total")
@@ -116,7 +115,7 @@ as Counter, Gauge, Histogram and Summary. This graph shows the rate of increment
 
 ### UpDownCounter
 
-In this example, we instrument Kafka queue size as events are published and consumed.
+To illustrate this, we instrument Kafka queue size whenever events are published and consumed.
 
 - Synchronous: increments are captured immediately.
 - Adding (measurement): aggregate a sum.
@@ -142,8 +141,7 @@ Output graph in Grafana to show the queue size
 
 ### ValueRecorder
 
-The common use of the ValueRecorder instrument is to record every single latency measurement. It is useful to gain a statistical view 
-of request latency such as mean, median or percentile. Characteristics of a ValueRecorder are:
+The common use of the ValueRecorder instrument is to record every single latency measurement. It is useful to gain a statistical view of request latency such as mean, median or percentile. Characteristics of a ValueRecorder are:
 
 - Synchronous: latency is captured for every execution path.
 - Grouping: all values are recorded rather than added to a sum.
@@ -198,9 +196,9 @@ is not so useful and the request's context is not important.
 - Monotonic: the sum is only increasing.
 
 An example of this instrument is used to record the number of completed GC cycles in Go, which can be found 
-in the contrib package <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/runtime>
+in the contrib package <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/runtime>.
 
-The output from the metric endpoint
+The output from the metric endpoint:
 ```
 # TYPE runtime_go_gc_count counter
 runtime_go_gc_count 463
@@ -213,18 +211,18 @@ As it is monotonic and adding, we can graph an increased rate:
 ### UpDownSumObserver
 
 Similar to UpDownCounter but this instrument is asynchronous and suitable for capturing expensive metrics or metrics
-that change too frequently
+that change too frequently.
 
 <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/runtime> contains several examples of this instrument to measure:
 
-- Bytes of allocated heap objects
-- Number of allocated heap objects
-- Bytes of heap memory obtained from the OS
+- Bytes of allocated heap objects.
+- Number of allocated heap objects.
+- Bytes of heap memory obtained from the OS.
 
 ### ValueObserver
 
 This is an asynchronous version of the ValueRecorder which collects grouping measurements non-monotonically and produce a distribution of recorded
-values (i.e CPU temperature)
+values (i.e CPU temperature).
 
 ### How to pick the right instrument
 
