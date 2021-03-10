@@ -26,9 +26,7 @@ This is the second part in a series about OpenTelemetry:
 
 ## Metrics
 
-While distributed tracing opens the capability to dive into the lifetime of a request, metrics are viable signals for monitoring overall system health. Mission-critical systems continuously emit telemetry data (i.e: gauges, counter and numbers) in time-series format so that it can be collected, statistically transformed, correlated and visualised to predict potential issues. Telemetry has been long used in [many other industries](https://en.wikipedia.org/wiki/Telemetry). For example, most cars today have onboard diagnostic system (OBD) that can be connected to with a scanner to read [its trouble code](https://en.wikipedia.org/wiki/OBD-II_PIDs); a solar monitoring system can report metrics about energy consumption, production, grid export and import.
-
-In the software world, engineers have utilised various tools to monitor software performance signals such as latency, errors, traffic, saturations. These tools are specifically designed for each layer of abstraction:
+[Telemetry](https://en.wikipedia.org/wiki/Telemetry) has long been used in industries to monitor and predict potential issues. For example, most cars today have onboard diagnostic system (OBD) that can be connected with a scanner to read [its trouble code](https://en.wikipedia.org/wiki/OBD-II_PIDs). Solar monitoring system can report metrics about energy consumption, production, grid export and import. In the software world, metric events are viable signals for monitoring overall system health. Mission-critical systems are designed to continuously emit gauges, counter and aggregated metrics in time-series format so that it can be indexed, statistically transformed, correlated and visualised. Engineers have utilised various tools to monitor software performance signals such as latency, errors, traffic, saturations. These tools are specifically designed for each layer of abstraction:
 
 - Infrastructure: netstat, iostat, vmstat, sysstat, cAdvisor, kube-state-metrics, node-exporter...
 - Application: JMX/micrometer, StatsD, Prometheus, Opencensus...
