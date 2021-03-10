@@ -34,7 +34,7 @@ In the software world, engineers have utilised various tools to monitor software
 - Application: JMX/micrometer, StatsD, Prometheus, Opencensus...
 - Platform: Datadogs, Splunk, Newrelics...
 
-This complexity in the tooling landscape draws many challenges for business to build and operate their platform in a unified way. With the vendor-neutral approach, OTel does not reinvent a new metric-based library or platform, instead, its direction is on standardising metric types, telemetry pipeline architecture and providing a vendor-agnostic protocol for the transmission of telemetry data over the network. While still in beta, the Metrics API and Go SDK is ready for some certain experiments, we will tap into the key concepts by examples.
+This complexity in the tooling landscape poses challenges for businesses to build and operate their platform in a unified way. As a CNCF project, OTel's main goal is standardising metric types, telemetry pipeline architecture and providing a vendor-agnostic OLTP protocol for the transmission of telemetry data over the network. While still in beta, the Metrics API and Go SDK is ready for some certain experiments, we will tap into the key concepts by examples.
 
 {{% toc %}}
 
