@@ -26,9 +26,9 @@ This is the second part in a series about OpenTelemetry:
 
 ## Metrics
 
-While distributed tracing opens the capability to dive into the lifetime of a request, metrics are viable signals for monitoring overall system health. Mission-critical systems continuously emit telemetry data (i.e: gauges, counter and numbers) in time-series format so that it can be collected, statistically transformed, correlated and visualised to predict potential issues. Telemetry has been long used in [many other industries](https://en.wikipedia.org/wiki/Telemetry). For example, most cars today have OBD (onboard diagnostic) system that can be connected to with a scanner to read [its trouble code](https://en.wikipedia.org/wiki/OBD-II_PIDs); a solar monitoring system can report metrics about energy consumption, production, grid export and import.
+While distributed tracing opens the capability to dive into the lifetime of a request, metrics are viable signals for monitoring overall system health. Mission-critical systems continuously emit telemetry data (i.e: gauges, counter and numbers) in time-series format so that it can be collected, statistically transformed, correlated and visualised to predict potential issues. Telemetry has been long used in [many other industries](https://en.wikipedia.org/wiki/Telemetry). For example, most cars today have onboard diagnostic system (OBD) that can be connected to with a scanner to read [its trouble code](https://en.wikipedia.org/wiki/OBD-II_PIDs); a solar monitoring system can report metrics about energy consumption, production, grid export and import.
 
-In the software world, engineers have utilised various tools to monitor software performance signals such as latency, errors, traffic, saturations. Those tools are specifically designed for each layer of abstraction:
+In the software world, engineers have utilised various tools to monitor software performance signals such as latency, errors, traffic, saturations. These tools are specifically designed for each layer of abstraction:
 
 - Infrastructure: netstat, iostat, vmstat, sysstat, cAdvisor, kube-state-metrics, node-exporter...
 - Application: JMX/micrometer, StatsD, Prometheus, Opencensus...
@@ -42,8 +42,8 @@ This complexity in the tooling landscape poses challenges for businesses to buil
 
 Similar to Tracing SDK, the architecture for metrics processing consists of two major components:
 
-- Metrics API (the user-facing API) captures runtime measurements about program execution. Developers will pass raw measurements with metadata to the unified interface.
-- Metrics SDK (the actual implementation) processes telemetry data through a composable pipeline of accumulators, processors and exporters. A default SDK implementation is provided for each language.
+- Metrics API is the user-facing API that captures runtime measurements. Applications will pass raw measurements with metadata to the unified interface.
+- Metrics SDK is the actual implementation that processes telemetry data through a composable pipeline of accumulators, processors and exporters. A default SDK implementation is provided for each language.
 
 The journey of a metric event is illustrated through the diagram below:
 
@@ -54,10 +54,10 @@ The journey of a metric event is illustrated through the diagram below:
 - The instrument invokes SDK implementation api and passes through the metric event.
 - Depending on the measurement semantic (see below), if batching is required, the Accumulator batches the metrics to optimise performance.
 - The processor picks a suitable aggregator to perform aggregation logic on the metric events.
-- The Controller manages the how and when the metric collection happens via collection mode (`push` or `pull`), collection checkpoints and the timer.
-- Exporters export outcome to storage backend or scraper via configured metric protocol (i.e OTLP).
+- The Controller manages the how and when the metric collection happens via collection mode (either push or pull), collection checkpoints and the timer.
+- Exporters export outcome to storage backend or scraper via a configured metric protocol like OLTP.
 
-In the [ShortenIt example](https://thanhnamit.netlify.app/2021/01/03/applying-observability-with-opentelemetry-part-1-distributed-tracing/#explore-otel-examples-with-shortenit), we will explore how OpenTel exports simple metrics to Prometheus backend and view it via Grafana. The code below starts a metric server and expose a HTTP endpoint `/metrics` for Prometheus scraper. It is also configured with auto-instrumentation for application runtime and host, this is very handy if we don't want to write code to collect those metrics from scratch.
+In the [ShortenIt example](https://thanhnamit.netlify.app/2021/01/03/applying-observability-with-opentelemetry-part-1-distributed-tracing/#explore-otel-examples-with-shortenit), we will explore how OTel exports simple metrics to Prometheus backend and view it via Grafana. The code below starts a metric server and initiate a HTTP endpoint `/metrics` for Prometheus scraper. It is also configured with auto-instrumentation for application runtime and host, this is very handy if we don't want to write code to collect those metrics from scratch.
 
 ```go
 func InitMeter() {
@@ -85,7 +85,7 @@ func InitMeter() {
 
 ### Metric event semantics
 
-For the SDK to apply proper processing logic to each type of measurement, the metric event must carry its own semantics (or meaning). OTel defines three key semantic groups:
+For the SDK to apply proper processing logic to each type of measurement, the metric event must carry its own semantics. OTel defines three key semantic groups:
 
 - **Synchronicity**: <ins>synch</ins> - a metric event is collected immediately (i.e latency) or <ins>async</ins> - the event is collected later in a separate process (i.e mem stats).
 - **Measurement style**: <ins>adding</ins> - new value is added to previous metric value (i.e sum) or <ins>grouping</ins> - collect individual values (i.e latency).
@@ -98,7 +98,7 @@ For each measurement, the meter provides a corresponding instrument. Let's loop 
 To be used when it is meaningful to record the sum of a metric at a point in time. In case of counting total bytes processed by an endpoint, this instrument has the following characteristics:
 
 - Synchronous: the size of a request is captured immediately during execution.
-- Adding (measurement): only a single value (total of bytes) makes sense.
+- Adding: only a single value makes sense.
 - Monotonic: the total of bytes is only increasing.
 
 ```go
@@ -118,8 +118,8 @@ as Counter, Gauge, Histogram and Summary. This graph shows the rate of increment
 To illustrate this, we instrument Kafka queue size whenever events are published and consumed.
 
 - Synchronous: increments are captured immediately.
-- Adding (measurement): aggregate a sum.
-- Non-monotonic: the sum can go up and down (accept both positive and negative increments).
+- Adding: aggregate a sum.
+- Non-monotonic: the sum can go up or down.
 
 ```go
 // on producer side
@@ -232,17 +232,17 @@ Using the right instrument would require library users to have some understandin
 
 ### A quick note about cardinality
 
-On a [retrospective post](https://thenewstack.io/observability-a-3-year-retrospective/) about Observability, Charity Major (CTO of HoneyComb.io) stressed the importance of high-cardinality data for observable systems. Typical metrics-based tools (were designed for monolithic systems) only provide aggregated low-cardinality dimensions (metrics values associated with node name, container id, build number...) which are not useful for debugging purpose in the context of distributed systems. To help uncover hypotheses and pin down exactly the bad code block, high-cardinality data must be available (unique IDs like request ID, customer ID or event ID...) along with distributed context and raw events.
+On a [retrospective post](https://thenewstack.io/observability-a-3-year-retrospective/) about Observability, Charity Major stressed the importance of high-cardinality data for observable systems. Typical metrics-based tools that were designed for monolithic systems only provide aggregated low-cardinality dimensions which are not useful for debugging purpose in the context of distributed systems. To help uncover hypotheses and pin down exactly the bad code block, high-cardinality data request ID, customer ID or event ID should be available.
 
-OTel library plans to support both cumulative (as demonstrated with Prometheus in this post) and stateless exporters to output high-cardinality events to a downstream collector or metric backend. This has been discussed with details  in [a community talk by Josh MacDonald](https://youtu.be/L-Ss8PtWlRA?t=1951).
+OTel library plans to support both cumulative and stateless exporters to output high-cardinality events to a downstream collector or metric backend. This has been discussed with details  in [a community talk by Josh MacDonald](https://youtu.be/L-Ss8PtWlRA?t=1951).
 
 ## Logs
 
-At the current stage, OTel does not provide a new Logging API. Instead, it relies on current well known logging libraries to supply log events in existing formats. Log entries are forwarded to an OTel collector which performs transformation to [a log data model](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/data-model.md) before exporting to storage backends. The log data model hence is defined to share a common understanding of what log entries should look like, including the key information for log correlation (time of execution, execution context and resource context). We will explore this area more in the next post.
+At the current stage, OTel does not provide a new Logging API. It relies on current well known logging libraries to supply log events in existing formats. Log entries are forwarded to an OTel collector which performs transformation to [a log data model](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/data-model.md) before exporting to storage backends. The log data model hence is defined to share a common understanding of what log entries should look like, including the key information for log correlation such as time of execution, execution context and resource context. We will explore this area more in the next post.
 
 ## Summary
 
-In the first two posts, we have touched on each individual component of OpenTelemetry - tracing, metrics, logs. This however doesn't illustrate the big picture as well as what improvements OTel bring to the ecosystem. In the next post, I will attempt to put these concepts together by combining traces, metrics and logs. I also will discuss possible deployment topologies for microservices architecture within a cloud-native platform such as AWS. Stay tuned!
+In the first two posts, we have touched on each individual component of OpenTelemetry. Each component deals with a specific concern in observability space. The most important thing, however, is how to leverage these components to gain a more comprehensive view of a distributed system running in production. In the next post, I will attempt to put these concepts together by combining traces, metrics and logs. I also will discuss possible deployment topologies for microservices architecture within a cloud-native platform such as AWS. Stay tuned!
 
 ## References
 
