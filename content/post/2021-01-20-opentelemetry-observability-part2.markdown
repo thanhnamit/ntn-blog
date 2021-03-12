@@ -26,7 +26,7 @@ This is the second part in a series about OpenTelemetry:
 
 ## Metrics
 
-[Telemetry](https://en.wikipedia.org/wiki/Telemetry) has long been used in industries to monitor and predict potential issues. For example, most cars today have onboard diagnostic system (OBD) that can be connected with a scanner to read [its trouble code](https://en.wikipedia.org/wiki/OBD-II_PIDs). Solar monitoring system can report metrics about energy consumption, production, grid export and import. In the software world, metric events are viable signals for monitoring overall system health. Mission-critical systems are designed to continuously emit gauges, counter and aggregated metrics in time-series format so that it can be indexed, statistically transformed, correlated and visualised. Engineers have utilised various tools to monitor software performance signals such as latency, errors, traffic, saturations. These tools are specifically designed for each layer of abstraction:
+[Telemetry](https://en.wikipedia.org/wiki/Telemetry) has long been used in industries to monitor and predict potential issues. For example, most cars today have an onboard diagnostic system (OBD) that can be connected with a scanner to read [its trouble code](https://en.wikipedia.org/wiki/OBD-II_PIDs). A solar monitoring system can report metrics about energy consumption, production, grid export and import. In the software world, metric events are viable signals for monitoring overall system health. Mission-critical systems are designed to continuously emit gauges, counter and aggregated metrics in a time-series format so that they can be indexed, statistically transformed, correlated and visualised. Engineers have utilised various tools to monitor software performance signals such as latency, errors, traffic, saturations. These tools are specifically designed for each layer of abstraction:
 
 - Infrastructure: netstat, iostat, vmstat, sysstat, cAdvisor, kube-state-metrics, node-exporter...
 - Application: JMX/micrometer, StatsD, Prometheus, Opencensus...
@@ -55,7 +55,7 @@ The journey of a metric event is illustrated through the diagram below:
 - The Controller manages the how and when the metric collection happens via collection mode (either push or pull), collection checkpoints and the timer.
 - Exporters export outcome to storage backend or scraper via a configured metric protocol like OLTP.
 
-In the [ShortenIt example](https://thanhnamit.netlify.app/2021/01/03/applying-observability-with-opentelemetry-part-1-distributed-tracing/#explore-otel-examples-with-shortenit), we will explore how OTel exports simple metrics to Prometheus backend and view it via Grafana. The code below starts a metric server and initiate a HTTP endpoint `/metrics` for Prometheus scraper. It is also configured with auto-instrumentation for application runtime and host, this is very handy if we don't want to write code to collect those metrics from scratch.
+In the [ShortenIt example](https://thanhnamit.netlify.app/2021/01/03/applying-observability-with-opentelemetry-part-1-distributed-tracing/#explore-otel-examples-with-shortenit), we will explore how OTel exports simple metrics to Prometheus backend and view it via Grafana. The code below starts a metric server and initiate an HTTP endpoint `/metrics` for Prometheus scraper. It is also configured with auto-instrumentation for application runtime and host, this is very handy if we don't want to write code to collect those metrics from scratch.
 
 ```go
 func InitMeter() {
@@ -86,14 +86,14 @@ func InitMeter() {
 For the SDK to apply proper processing logic to each type of measurement, the metric event must carry its own semantics. OTel defines three key semantic groups:
 
 - **Synchronicity**: <ins>synch</ins> - a metric event is collected immediately (i.e latency) or <ins>async</ins> - the event is collected later in a separate process (i.e mem stats).
-- **Measurement style**: <ins>adding</ins> - new value is added to previous metric value (i.e sum) or <ins>grouping</ins> - collect individual values (i.e latency).
+- **Measurement Style**: <ins>adding</ins> - new value is added to previous metric value (i.e sum) or <ins>grouping</ins> - collect individual values (i.e latency).
 - **Monotonicity**: <ins>monotonic</ins> - positive increase only (i.e number of 200 OK) or <ins>non-monotonic</ins> - both positive and negative increase (i.e queue depth).
 
 For each measurement, the meter provides a corresponding instrument. Let's loop through each of them with some examples.
 
 ### Counter
 
-To be used when it is meaningful to record the sum of a metric at a point in time. In case of counting total bytes processed by an endpoint, this instrument has the following characteristics:
+To be used when it is meaningful to record the sum of a metric at a point in time. In the case of counting total bytes processed by an endpoint, this instrument has the following characteristics:
 
 - Synchronous: the size of a request is captured immediately during execution.
 - Adding: only a single value makes sense.
@@ -145,7 +145,7 @@ The common use of the ValueRecorder instrument is to record every single latency
 - Grouping: all values are recorded rather than added to a sum.
 - Non-monotonic: latency value can increase or decrease.
 
-Manually recording latency at server side can be done in middleware as in the example below
+Manually recording latency at the server side can be done in middleware as in the example below
 
 ```go
 func latencyRecorder(next http.Handler, operation string) func(w http.ResponseWriter, r *http.Request) {
@@ -214,7 +214,7 @@ that change too frequently.
 <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/runtime> contains several examples of this instrument to measure:
 
 - Bytes of allocated heap objects.
-- Number of allocated heap objects.
+- The number of allocated heap objects.
 - Bytes of heap memory obtained from the OS.
 
 ### ValueObserver
@@ -236,7 +236,7 @@ OTel library plans to support both cumulative and stateless exporters to output 
 
 ## Logs
 
-At the current stage, OTel does not provide a new Logging API. It relies on current well known logging libraries to supply log events in existing formats. Log entries are forwarded to an OTel collector which performs transformation to [a log data model](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/data-model.md) before exporting to storage backends. The log data model hence is defined to share a common understanding of what log entries should look like, including the key information for log correlation such as time of execution, execution context and resource context. We will explore this area more in the next post.
+At the current stage, OTel does not provide a new Logging API. It relies on current well-known logging libraries to supply log events in existing formats. Log entries are forwarded to an OTel collector which performs transformation to [a log data model](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/data-model.md) before exporting to storage backends. The log data model hence is defined to share a common understanding of what log entries should look like, including the key information for log correlation such as time of execution, execution context and resource context. We will explore this area more in the next post.
 
 ## Summary
 
